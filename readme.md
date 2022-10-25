@@ -20,7 +20,7 @@
 实际效果：
 ![实际效果](https://file.tapd.cn/compress/compress_img/700/tapd_49064833_1651112304_95.png?src=/tfl/pictures/202204/tapd_49064833_1651112304_95.png)
 
-第二版，植树主题：
+#### 第二版，植树主题：
 
 ```json
 {
@@ -69,6 +69,52 @@
     }
 }
 
+```
+
+实际效果：
+
+![image-20221024115641373](assets/image-20221024115641373.png)
+
+#### 第三版 （植树活动结束）
+
+```json
+{
+    "msgtype":"template_card",
+    "template_card":{
+        "card_type":"news_notice",
+        "source":{
+            "icon_url":"http://picturebucket4md.oss-cn-shenzhen.aliyuncs.com/ossbrs/White-OE-Square%20Background.png",
+            "desc":"Excellent Everyday",
+            "desc_color":0
+        },
+        "image_text_area":{
+            "type":1,
+            "url":"http://picturebucket4md.oss-cn-shenzhen.aliyuncs.com/ossbrs/oe1.jpg",
+            "title":"新的一天，新的开始",
+            "desc":"请查收今日天气",
+            "image_url":"{{TodaysConditionImageURL}}"
+        },
+        "vertical_content_list":[
+            {
+                "title":"当前气温：{{CurrentTempCelsius}}℃",
+                "desc":"天气: {{TodaysCondition}}\n气温:{{LowTempCelsius}}-{{HighTempCelsius}}℃\n风速 :{{WindSpeedKph}}km/h\n湿度: {{Humidity}}"
+            }
+        ],
+                "jump_list":[
+            {
+                "type":1,
+                "url":"alipay://platformapi/startapp?sald=60000002",
+                "title":"跳转支付宝（仅支持iPhone）"
+            }
+        ],
+        "card_action":{
+            "type":1,
+            "url":"alipay://platformapi/startapp?sald=60000002",
+            "appid":"APPID",
+            "pagepath":"PAGEPATH"
+        }
+    }
+}
 ```
 
 
