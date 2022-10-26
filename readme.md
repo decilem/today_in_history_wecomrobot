@@ -164,7 +164,7 @@
             "desc":"别卷了，让我们享用美味的午餐吧"
         },
         "card_image":{
-            "url":"http://picturebucket4md.oss-cn-shenzhen.aliyuncs.com/ossbrs/noeat.jpg",
+            "url":"http://picturebucket4md.oss-cn-shenzhen.aliyuncs.com/ossbrs/anyone-alive.gif",
             "aspect_ratio":1.3
         },
         "image_text_area":{
