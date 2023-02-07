@@ -103,13 +103,13 @@
                 "jump_list":[
             {
                 "type":1,
-                "url":"alipay://platformapi/startapp?sald=60000002",
-                "title":"跳转支付宝（仅支持iPhone）"
+                "url":"https://www.tapd.cn/49064833/bugtrace/bugs/add?&template_id=1149064833001000225",
+                "title":"去TAPD反馈意见"
             }
         ],
         "card_action":{
             "type":1,
-            "url":"alipay://platformapi/startapp?sald=60000002",
+            "url":"https://www.tapd.cn/49064833/bugtrace/bugs/add?&template_id=1149064833001000225",
             "appid":"APPID",
             "pagepath":"PAGEPATH"
         }
