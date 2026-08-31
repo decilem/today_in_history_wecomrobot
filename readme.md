@@ -197,3 +197,27 @@
 }
 ```
 
+### 4. 历史上的今天
+
+新增 `todayinhistory` 项目，用于每天获取历史事件并推送到企业微信群机器人。
+
+#### 实现要点
+
+- 通过聚合数据“历史上的今天”接口，按上海时区获取当天事件。
+- 从接口返回结果中随机选择 4 条，避免消息过长。
+- 使用企业微信 `news_notice` 模板卡片，展示日期、事件标题、卡片图片和跳转链接。
+- 本地默认使用 `credentials.yaml` 中的 `testkey`；GitHub Actions 使用仓库 Secrets，不提交明文凭据。
+- 支持 `--dry-run` 预览卡片 JSON，以及 `--date YYYY-MM-DD` 指定日期。
+- 已添加接口请求、随机筛选和模板卡片结构的单元测试。
+
+#### GitHub Actions
+
+工作流位于 `.github/workflows/today-in-history.yml`，当前配置为每天北京时间 16:00 运行，也支持在 Actions 页面手动触发。仓库需要配置以下 Actions Secrets：
+
+- `TODAY_IN_HISTORY_API_KEY`：聚合数据接口 key。
+- `WECOM_WEBHOOK_URL`：企业微信机器人完整 Webhook 地址。
+
+手动运行默认会真实推送；如只需检查输出，应勾选 `dry_run`。GitHub 定时任务使用 UTC，当前 `0 8 * * *` 对应北京时间 16:00。
+
+详细运行方式和测试命令见 [todayinhistory/README.md](todayinhistory/README.md)。
+
