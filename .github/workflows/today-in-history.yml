@@ -13,7 +13,7 @@ on:
       dry_run:
         description: "Fetch and print without sending to WeCom"
         required: false
-        default: true
+        default: false
         type: boolean
 
 permissions:
@@ -29,10 +29,10 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
