@@ -1,0 +1,59 @@
+name: Push Today in History
+
+on:
+  schedule:
+    # GitHub Actions uses UTC. 00:00 UTC is 08:00 in Asia/Shanghai.
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Optional date (YYYY-MM-DD)"
+        required: false
+        type: string
+      dry_run:
+        description: "Fetch and print without sending to WeCom"
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: today-in-history-push
+  cancel-in-progress: false
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: todayinhistory/requirements.txt
+
+      - name: Install dependencies
+        run: python -m pip install -r todayinhistory/requirements.txt
+
+      - name: Fetch history and push message
+        env:
+          TODAY_IN_HISTORY_API_KEY: ${{ secrets.TODAY_IN_HISTORY_API_KEY }}
+          WECOM_WEBHOOK_URL: ${{ secrets.WECOM_WEBHOOK_URL }}
+          RUN_DATE: ${{ inputs.date }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        shell: bash
+        run: |
+          args=()
+          if [[ -n "$RUN_DATE" ]]; then
+            args+=(--date "$RUN_DATE")
+          fi
+          if [[ "$DRY_RUN" == "true" ]]; then
+            args+=(--dry-run)
+          fi
+          python todayinhistory/today_in_history.py "${args[@]}"
