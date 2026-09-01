@@ -127,7 +127,7 @@ def build_template_card(events: list[dict[str, Any]], target_date: date) -> dict
                 "desc": f"{target_date.month}月{target_date.day}日历史事件",
             },
             "card_image": {
-                "url": "http://picturebucket4md.oss-cn-shenzhen.aliyuncs.com/ossbrs/oe2.jpg",
+                "url": "http://picturebucket4md.oss-cn-shenzhen.aliyuncs.com/ossbrs/oe2.png",
                 "aspect_ratio": 1.8,
             },
             "vertical_content_list": vertical_content_list,
