@@ -25,8 +25,7 @@ else:
 
 
 EVENTS_API_URL = "https://v.juhe.cn/todayOnhistory/queryEvent"
-BING_WALLPAPER_API_URL = "https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN"
-BING_IMAGE_HOST = "https://www.bing.com"
+DEFAULT_CARD_IMAGE_URL = "http://picturebucket4md.oss-cn-shenzhen.aliyuncs.com/ossbrs/oe2.png"
 SHANGHAI_TIMEZONE = ZoneInfo("Asia/Shanghai")
 EVENT_COUNT = 5
 WECOM_VERTICAL_CONTENT_LIMIT = 4
@@ -157,19 +156,6 @@ def select_events(events: list[dict[str, Any]], count: int = EVENT_COUNT) -> lis
     return sorted(selected, key=lambda event: (event_year(event) is None, event_year(event) or 0))
 
 
-def fetch_bing_wallpaper() -> str:
-    request = Request(BING_WALLPAPER_API_URL, headers={"User-Agent": "today-in-history/1.0"})
-    payload = request_json(request)
-    images = payload.get("images")
-    if not isinstance(images, list) or not images or not isinstance(images[0], dict):
-        raise HistoryPushError("必应壁纸接口未返回图片")
-
-    url_base = images[0].get("urlbase")
-    if not isinstance(url_base, str) or not url_base:
-        raise HistoryPushError("必应壁纸接口未返回图片地址")
-    return f"{BING_IMAGE_HOST}{url_base}_1920x1080.jpg"
-
-
 def truncate(value: Any, limit: int) -> str:
     text = " ".join(str(value).split())
     if len(text) <= limit:
@@ -180,7 +166,6 @@ def truncate(value: Any, limit: int) -> str:
 def build_template_card(
     events: list[dict[str, Any]],
     target_date: date,
-    wallpaper_url: str,
 ) -> dict[str, Any]:
     vertical_content_list = [
         {
@@ -213,7 +198,7 @@ def build_template_card(
                 "desc": f"{target_date.month}月{target_date.day}日历史事件",
             },
             "card_image": {
-                "url": wallpaper_url,
+                "url": DEFAULT_CARD_IMAGE_URL,
                 "aspect_ratio": 1.8,
             },
             "vertical_content_list": vertical_content_list,
@@ -279,8 +264,7 @@ def main() -> int:
         target_date = parse_date(args.date)
         events = fetch_events(api_key, target_date)
         selected_events = select_events(events)
-        wallpaper_url = fetch_bing_wallpaper()
-        message = build_template_card(selected_events, target_date, wallpaper_url)
+        message = build_template_card(selected_events, target_date)
 
         if args.dry_run:
             print(json.dumps(message, ensure_ascii=False, indent=2))

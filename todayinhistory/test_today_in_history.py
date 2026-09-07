@@ -3,7 +3,7 @@ import unittest
 from datetime import date
 from unittest.mock import MagicMock, patch
 
-from today_in_history import build_template_card, fetch_bing_wallpaper, fetch_events, select_events
+from today_in_history import DEFAULT_CARD_IMAGE_URL, build_template_card, fetch_events, select_events
 
 
 class TodayInHistoryTests(unittest.TestCase):
@@ -56,33 +56,18 @@ class TodayInHistoryTests(unittest.TestCase):
         self.assertEqual(len(selected), 5)
         self.assertEqual([event["e_id"] for event in selected], ["ancient", "feudal-1", "feudal-2", "feudal-3", "modern"])
 
-    @patch("today_in_history.urlopen")
-    def test_fetch_bing_wallpaper_uses_1920x1080(self, mock_urlopen: MagicMock) -> None:
-        response = MagicMock()
-        response.__enter__.return_value = response
-        response.read.return_value = json.dumps(
-            {"images": [{"urlbase": "/th?id=OHR.Test"}]}
-        ).encode("utf-8")
-        mock_urlopen.return_value = response
-
-        self.assertEqual(
-            fetch_bing_wallpaper(),
-            "https://www.bing.com/th?id=OHR.Test_1920x1080.jpg",
-        )
-
     def test_builds_template_card_with_four_events(self) -> None:
         events = [
             {"date": f"{1900 + index}年8月31日", "title": f"历史事件 {index}"}
             for index in range(4)
         ]
 
-        wallpaper_url = "https://cn.bing.com/th?id=OHR.Test_1920x1080.jpg"
-        message = build_template_card(events, date(2026, 8, 31), wallpaper_url)
+        message = build_template_card(events, date(2026, 8, 31))
 
         self.assertEqual(message["msgtype"], "template_card")
         card = message["template_card"]
         self.assertEqual(card["card_type"], "news_notice")
-        self.assertEqual(card["card_image"]["url"], wallpaper_url)
+        self.assertEqual(card["card_image"]["url"], DEFAULT_CARD_IMAGE_URL)
         self.assertEqual(card["card_image"]["aspect_ratio"], 1.8)
         self.assertEqual(len(card["vertical_content_list"]), 4)
         self.assertEqual(card["vertical_content_list"][0]["desc"], "历史事件 0")
@@ -93,9 +78,7 @@ class TodayInHistoryTests(unittest.TestCase):
             for index in range(5)
         ]
 
-        message = build_template_card(
-            events, date(2026, 8, 31), "https://cn.bing.com/wallpaper.jpg"
-        )
+        message = build_template_card(events, date(2026, 8, 31))
 
         vertical_content_list = message["template_card"]["vertical_content_list"]
         self.assertEqual(len(vertical_content_list), 4)
