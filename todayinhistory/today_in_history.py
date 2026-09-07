@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import random
+import re
 import sys
 from datetime import date, datetime
 from pathlib import Path
@@ -24,8 +25,9 @@ else:
 
 
 EVENTS_API_URL = "https://v.juhe.cn/todayOnhistory/queryEvent"
+BING_WALLPAPER_API_URL = "https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN"
 SHANGHAI_TIMEZONE = ZoneInfo("Asia/Shanghai")
-EVENT_COUNT = 4
+EVENT_COUNT = 5
 
 
 class HistoryPushError(RuntimeError):
@@ -92,8 +94,78 @@ def fetch_events(api_key: str, target_date: date) -> list[dict[str, Any]]:
     return [event for event in events if isinstance(event, dict)]
 
 
+def event_year(event: dict[str, Any]) -> int | None:
+    value = str(event.get("date", ""))
+    match = re.search(r"(前\s*)?(\d+)年", value)
+    if not match:
+        return None
+    year = int(match.group(2))
+    return -year if match.group(1) else year
+
+
+def events_in_period(
+    events: list[dict[str, Any]], minimum: int | None, maximum: int | None
+) -> list[dict[str, Any]]:
+    period_events = []
+    for event in events:
+        year = event_year(event)
+        if year is not None and (minimum is None or year >= minimum) and (
+            maximum is None or year < maximum
+        ):
+            period_events.append(event)
+    return period_events
+
+
 def select_events(events: list[dict[str, Any]], count: int = EVENT_COUNT) -> list[dict[str, Any]]:
-    return random.sample(events, min(count, len(events)))
+    # 公元475年之前：原始社会以及奴隶社会；475年至1840年：封建社会；1840年之后：近现代。
+    target_count = min(count, len(events))
+    periods = (
+        events_in_period(events, None, 475),
+        events_in_period(events, 475, 1840),
+        events_in_period(events, 1840, None),
+    )
+    quotas = [2, 2, 1]
+    selected: list[dict[str, Any]] = []
+    remaining = [list(period) for period in periods]
+
+    for index, quota in enumerate(quotas):
+        quota = min(quota, target_count - len(selected))
+        picked = random.sample(remaining[index], min(quota, len(remaining[index]))) if quota else []
+        selected.extend(picked)
+        for event in picked:
+            remaining[index].remove(event)
+        shortage = quota - len(picked)
+        next_index = index + 1
+        while shortage and next_index < len(remaining):
+            extra = random.sample(remaining[next_index], min(shortage, len(remaining[next_index])))
+            selected.extend(extra)
+            for event in extra:
+                remaining[next_index].remove(event)
+            shortage -= len(extra)
+            next_index += 1
+
+    if len(selected) < target_count:
+        classified = {id(event) for period in periods for event in period}
+        leftovers = [event for event in events if id(event) not in classified and event not in selected]
+        leftovers.extend(event for period in remaining for event in period)
+        fill_count = min(len(leftovers), target_count - len(selected))
+        if fill_count:
+            selected.extend(random.sample(leftovers, fill_count))
+
+    return sorted(selected, key=lambda event: (event_year(event) is None, event_year(event) or 0))
+
+
+def fetch_bing_wallpaper() -> str:
+    request = Request(BING_WALLPAPER_API_URL, headers={"User-Agent": "today-in-history/1.0"})
+    payload = request_json(request)
+    images = payload.get("images")
+    if not isinstance(images, list) or not images or not isinstance(images[0], dict):
+        raise HistoryPushError("必应壁纸接口未返回图片")
+
+    url_base = images[0].get("urlbase")
+    if not isinstance(url_base, str) or not url_base:
+        raise HistoryPushError("必应壁纸接口未返回图片地址")
+    return f"https://cn.bing.com{url_base}_1920x1080.jpg"
 
 
 def truncate(value: Any, limit: int) -> str:
@@ -103,7 +175,11 @@ def truncate(value: Any, limit: int) -> str:
     return f"{text[: limit - 1]}…"
 
 
-def build_template_card(events: list[dict[str, Any]], target_date: date) -> dict[str, Any]:
+def build_template_card(
+    events: list[dict[str, Any]],
+    target_date: date,
+    wallpaper_url: str,
+) -> dict[str, Any]:
     vertical_content_list = []
     for event in events:
         vertical_content_list.append(
@@ -127,7 +203,7 @@ def build_template_card(events: list[dict[str, Any]], target_date: date) -> dict
                 "desc": f"{target_date.month}月{target_date.day}日历史事件",
             },
             "card_image": {
-                "url": "http://picturebucket4md.oss-cn-shenzhen.aliyuncs.com/ossbrs/oe2.png",
+                "url": wallpaper_url,
                 "aspect_ratio": 1.8,
             },
             "vertical_content_list": vertical_content_list,
@@ -193,7 +269,8 @@ def main() -> int:
         target_date = parse_date(args.date)
         events = fetch_events(api_key, target_date)
         selected_events = select_events(events)
-        message = build_template_card(selected_events, target_date)
+        wallpaper_url = fetch_bing_wallpaper()
+        message = build_template_card(selected_events, target_date, wallpaper_url)
 
         if args.dry_run:
             print(json.dumps(message, ensure_ascii=False, indent=2))
