@@ -87,6 +87,20 @@ class TodayInHistoryTests(unittest.TestCase):
         self.assertEqual(len(card["vertical_content_list"]), 4)
         self.assertEqual(card["vertical_content_list"][0]["desc"], "历史事件 0")
 
+    def test_builds_valid_card_when_five_events_are_selected(self) -> None:
+        events = [
+            {"date": f"{1900 + index}年8月31日", "title": f"历史事件 {index}"}
+            for index in range(5)
+        ]
+
+        message = build_template_card(
+            events, date(2026, 8, 31), "https://cn.bing.com/wallpaper.jpg"
+        )
+
+        vertical_content_list = message["template_card"]["vertical_content_list"]
+        self.assertEqual(len(vertical_content_list), 4)
+        self.assertIn("历史事件 4", vertical_content_list[-1]["desc"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -28,6 +28,7 @@ EVENTS_API_URL = "https://v.juhe.cn/todayOnhistory/queryEvent"
 BING_WALLPAPER_API_URL = "https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN"
 SHANGHAI_TIMEZONE = ZoneInfo("Asia/Shanghai")
 EVENT_COUNT = 5
+WECOM_VERTICAL_CONTENT_LIMIT = 4
 
 
 class HistoryPushError(RuntimeError):
@@ -180,13 +181,21 @@ def build_template_card(
     target_date: date,
     wallpaper_url: str,
 ) -> dict[str, Any]:
-    vertical_content_list = []
-    for event in events:
-        vertical_content_list.append(
-            {
-                "title": truncate(event.get("date") or "日期不详", 38),
-                "desc": truncate(event.get("title") or "未命名事件", 64),
-            }
+    vertical_content_list = [
+        {
+            "title": truncate(event.get("date") or "日期不详", 38),
+            "desc": truncate(event.get("title") or "未命名事件", 64),
+        }
+        for event in events[:WECOM_VERTICAL_CONTENT_LIMIT]
+    ]
+    overflow_events = events[WECOM_VERTICAL_CONTENT_LIMIT:]
+    if overflow_events and vertical_content_list:
+        overflow_text = "；".join(
+            f"{truncate(event.get('date') or '日期不详', 24)} {truncate(event.get('title') or '未命名事件', 48)}"
+            for event in overflow_events
+        )
+        vertical_content_list[-1]["desc"] = truncate(
+            f"{vertical_content_list[-1]['desc']}；另：{overflow_text}", 256
         )
 
     return {
