@@ -8,8 +8,9 @@
 
 - `TODAY_IN_HISTORY_API_KEY`：聚合数据“历史上的今天”接口 key。
 - `WECOM_WEBHOOK_URL`：企业微信机器人完整 Webhook 地址。测试阶段填写 testkey 对应的地址即可。
+- `WECOM_WEBHOOK_TEST_URL`：测试环境企业微信机器人 Webhook 地址，用于手动运行时选择 `test` 环境。
 
-工作流默认在北京时间每天 16:00 运行。也可以在 Actions 页面手动运行：默认会直接推送；如只想在日志中预览内容，请勾选 `dry_run`。
+工作流默认在北京时间工作日 07:49 运行并推送到正式环境。也可以在 Actions 页面手动运行，通过 `webhook_env` 选择 `production` 或 `test`；如只想在日志中预览内容，请勾选 `dry_run`。
 
 ## 本地运行
 

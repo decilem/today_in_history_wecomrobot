@@ -15,6 +15,14 @@ on:
         required: false
         default: false
         type: boolean
+      webhook_env:
+        description: "Webhook environment for manual runs"
+        required: false
+        default: production
+        type: choice
+        options:
+          - production
+          - test
 
 permissions:
   contents: read
@@ -44,7 +52,7 @@ jobs:
       - name: Fetch history and push message
         env:
           TODAY_IN_HISTORY_API_KEY: ${{ secrets.TODAY_IN_HISTORY_API_KEY }}
-          WECOM_WEBHOOK_URL: ${{ secrets.WECOM_WEBHOOK_URL }}
+          WECOM_WEBHOOK_URL: ${{ inputs.webhook_env == 'test' && secrets.WECOM_WEBHOOK_TEST_URL || secrets.WECOM_WEBHOOK_URL }}
           RUN_DATE: ${{ inputs.date }}
           DRY_RUN: ${{ inputs.dry_run }}
         shell: bash
