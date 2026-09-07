@@ -67,7 +67,7 @@ class TodayInHistoryTests(unittest.TestCase):
 
         self.assertEqual(
             fetch_bing_wallpaper(),
-            "https://cn.bing.com/th?id=OHR.Test_1920x1080.jpg",
+            "https://www.bing.com/th?id=OHR.Test_1920x1080.jpg",
         )
 
     def test_builds_template_card_with_four_events(self) -> None:

@@ -26,6 +26,7 @@ else:
 
 EVENTS_API_URL = "https://v.juhe.cn/todayOnhistory/queryEvent"
 BING_WALLPAPER_API_URL = "https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN"
+BING_IMAGE_HOST = "https://www.bing.com"
 SHANGHAI_TIMEZONE = ZoneInfo("Asia/Shanghai")
 EVENT_COUNT = 5
 WECOM_VERTICAL_CONTENT_LIMIT = 4
@@ -166,7 +167,7 @@ def fetch_bing_wallpaper() -> str:
     url_base = images[0].get("urlbase")
     if not isinstance(url_base, str) or not url_base:
         raise HistoryPushError("必应壁纸接口未返回图片地址")
-    return f"https://cn.bing.com{url_base}_1920x1080.jpg"
+    return f"{BING_IMAGE_HOST}{url_base}_1920x1080.jpg"
 
 
 def truncate(value: Any, limit: int) -> str:
