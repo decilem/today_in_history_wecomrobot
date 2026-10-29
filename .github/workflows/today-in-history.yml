@@ -2,8 +2,8 @@ name: Push Today in History
 
 on:
   schedule:
-    # GitHub Actions uses UTC. 23:49 UTC is 07:49 on weekdays in Asia/Shanghai.
-    - cron: "49 23 * * 1-5"
+    # GitHub Actions uses UTC. 21:49 UTC is 05:49 on weekdays in Asia/Shanghai.
+    - cron: "49 21 * * 1-5"
   workflow_dispatch:
     inputs:
       date:
